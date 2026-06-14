@@ -23,92 +23,81 @@ Install them with:
 ```bash
 pip install opencv-python numpy
 
+```
+
+---
 
 ## How to Use
 
-### 1\. Prepare Input Images
+### 1. Prepare Input Images
 
-- All input images must be **colour images**\. Each semantic class needs to be painted with a unique BGR colour \(refer to the default colour mapping below\)\.
+Input images must be **colour-coded semantic segmentation maps**, where each class is represented by a unique BGR color.
 
-- **Supported image formats**: \`\.png\`, \`\.jpg\`, \`\.jpeg\`, \`\.bmp\`, \`\.tiff\`
+Supported formats:
 
-### 2\. Adjust Configuration
+- .png
+- .jpg
+- .jpeg
+- .bmp
+- .tiff
 
-Modify the configurable parameters at the top of `enhance_dataset.py`:
+---
 
-- `input_folder` / `output_folder`: Set your custom input and output file paths
+### 2. Configure the Script
 
-- `num_output_images`: Number of augmented images generated for each single input image
+Edit parameters in `GRIST-A.py`:
 
-- `max_shift`: Maximum pixel displacement for equiaxed and unmelt patch repositioning
+- input_folder / output_folder
+- num_output_images
+- max_shift
+- color_tol
 
-- `color_tol`: Color tolerance for mask extraction \(compatible with JPEG compression artifacts\)
+---
 
-Detailed parameter explanations are listed in the **Configurable Parameters** section below\.
+## Default Color Coding (BGR)
 
-### 3\. Run the Script
+| Class | BGR Value | Color |
+|------|----------|------|
+| Crack | (0,0,255) | Red |
+| Equiaxed | (0,255,0) | Green |
+| Unmelt | (255,0,0) | Blue |
+| YSZ | (255,255,255) | White |
 
-```bash
-python enhance_dataset.py
-```
-
-Augmented images will be saved to the specified `output_folder` with the naming pattern:`originalname_1.png`, `originalname_2.png`, \.\.\.
-
-## Default Colour Coding \(BGR\)
-
-You can modify these BGR colour values in the configuration section of the script\.
-
-|Class|Colour \(B, G, R\)|Display Colour|
-|---|---|---|
-|Crack|\(0, 0, 255\)|Red|
-|Equiaxed|\(0, 255, 0\)|Green|
-|Unmelt|\(255, 0, 0\)|Blue|
-|YSZ|\(255, 255, 255\)|White|
+---
 
 ## Configurable Parameters
 
-|Parameter|Default|Description|
-|---|---|---|
-|`num_row`, `num_col`|12, 12|Grid size for background tile splitting|
-|`num_flip_patches`|100|Number of random tiles that are horizontally flipped for background augmentation|
-|`color_tol`|8|Tolerance per BGR channel during mask generation; increase the value for lossy compressed images \(e\.g\., JPEG\)|
-|`min_comp_area`|20|Minimum pixel area for valid equiaxed connected components; smaller components will be ignored|
-|`max_shift`|300|Maximum random translation offset \(±max\_shift\) for patch repositioning|
-|`num_output_images`|6|Number of augmented images generated for each original input image|
-|`min_shift` \(for unmelt\)|50|Minimum displacement for unmelt patch repositioning to ensure sufficient data variation|
+| Parameter | Default | Description |
+|----------|--------|-------------|
+| num_row | 12 | Grid rows |
+| num_col | 12 | Grid cols |
+| num_flip_patches | 100 | flipped tiles |
+| color_tol | 8 | color tolerance |
+| max_shift | 300 | displacement |
+| num_output_images | 6 | outputs per image |
 
-## Algorithm Outline
+---
 
-1. **Mask Generation**Extract binary masks for four semantic classes \(Crack, Equiaxed, Unmelt, YSZ\) based on the predefined BGR colour values\.
+## Algorithm Overview
 
-2. **Background Creation**Replace all equiaxed and unmelt pixel regions with YSZ white colour to generate a pure background template\.
+1. Mask Generation
+2. Background Construction
+3. Patch Extraction
+4. Grid Flip Augmentation
+5. Patch Repositioning
+6. Output Composition
 
-3. **Patch Extraction**
-
-    - Equiaxed: Each independent connected component is extracted as a separate patch
-
-    - Unmelt: The entire unmelt region is treated as a single integral patch \(no segmentation\)
-
-4. **Background Augmentation**Split the background image into uniform grid tiles, randomly flip partial tiles horizontally, and reassemble the tiles to generate a varied background\.
-
-5. **Patch Repositioning**
-
-    - Equiaxed patches: Rotate by 0°/90°/180°/270°, then place at a random offset \(±`max_shift`\) from the original position with overlap avoidance
-
-    - Unmelt patch: Rotate only by 90°/180°/270° \(no 0° rotation\), with a minimum 50px displacement to prevent negligible changes
-
-6. **Image Saving**Combine the augmented background and repositioned patches, then save the final composite image to the output directory\.
+---
 
 ## Notes
 
-- The script uses a fixed global random seed \(`42`\) for full reproducibility\. Each augmented image adopts an incremental seed \(`42 + i`\) to guarantee diverse output results\.
+- seed = 42 for reproducibility
+- seed = 42 + i per image variation
+- geometry preserved during augmentation
 
-- If a patch fails to be placed without overlap after multiple attempts, it will fallback to its original position \(clipped to image boundaries\)\.
-
-- The unmelt patch excludes 0° rotation by default to ensure obvious data augmentation effects\.
+---
 
 ## License
 
-This project is open\-source under the **MIT License**\. Feel free to use, modify and adapt the code for academic and research purposes\.
-
-> （注：文档部分内容可能由 AI 生成）
+This project is open‑source and available under the MIT License. Feel free to use and adapt it for your research.
+```
